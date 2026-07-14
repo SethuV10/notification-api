@@ -65,11 +65,6 @@ def get_staff(staff_id: int):
     return dict(staff_service.get_staff(staff_id))
 
 
-@router.get("/staff/{staff_id}/teams")
-def get_staff_teams(staff_id: int):
-    return [dict(team) for team in staff_service.get_staff_teams(staff_id)]
-
-
 @router.get("/teams/{team_id}/staff")
 def get_team_staff(team_id: int):
     return [dict(s) for s in staff_service.get_team_staff(team_id)]
@@ -104,7 +99,3 @@ def remove_staff_from_team(staff_id: int, team_id: int, current_user: str = Depe
 def get_staff_teams(staff_id: int):
     return [dict(team) for team in staff_service.get_staff_teams(staff_id)]
 
-
-@router.get("/teams/{team_id}/staff")
-def get_team_staff(team_id: int):
-    return [dict(s) for s in staff_service.get_team_staff(team_id)]
