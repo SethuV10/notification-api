@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+<<<<<<< HEAD
 from fastapi.middleware.cors import CORSMiddleware
 
 from repositories.database import init_db
@@ -36,3 +37,15 @@ init_db()
 @app.get("/")
 def root():
     return {"message": "Office Call Notification API is running!"}
+=======
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Hello, World!"}
+
+@app.get("/ping")
+def ping():
+    return {"status": "ok"}
+>>>>>>> 3b090cb2434d87a9e22395a09d259b08f689df8d
