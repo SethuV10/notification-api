@@ -34,7 +34,7 @@ class MessageRepository:
         messages = conn.execute("""
                                 SELECT *
                                 FROM messages
-                                WHERE room_id = ?
+                                WHERE (room_id = ? or room_id=999)
                                 AND created_at >= date('now', 'localtime')
                                 AND created_at < datetime(date('now', 'localtime'), '+1 day')
                                 ORDER BY created_at DESC
