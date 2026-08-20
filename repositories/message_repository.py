@@ -41,6 +41,26 @@ class MessageRepository:
                                 """, (room_id,)).fetchall()
         conn.close()
         return messages
+
+    
+    def get_all_Active_messages(self):
+        conn = get_db_connection()
+        messages = conn.execute("""
+                                SELECT *
+                                FROM messages
+                                WHERE created_at >= datetime('now', '-10 days')
+                                ORDER BY created_at DESC
+                                """).fetchall()
+
+        conn.close()
+        return messages
+
+
+    
+    
+
+
+
     
     def get_active_by_team(self, team_id: int):
         conn = get_db_connection()
