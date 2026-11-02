@@ -2,14 +2,14 @@ from .database import get_db_connection
 
 
 class StaffRepository:
-    def create(self, staff_name: str, staff_short_name: str, room_id: int, role_id: int | None = None, active: int = 1):
+    def create(self, staff_name: str, staff_short_name: str, room_id: int, role_id: int | None = None, active: int = 1, phone_number: str | None = None):
         conn = get_db_connection()
         cursor = conn.execute(
             """
-            INSERT INTO staff (staff_name, staff_short_name, room_id, role_id, active)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO staff (staff_name, staff_short_name, room_id, role_id, active, phone_number)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (staff_name, staff_short_name, room_id, role_id, active),
+            (staff_name, staff_short_name, room_id, role_id, active, phone_number),
         )
         conn.commit()
         new_id = cursor.lastrowid
@@ -29,13 +29,51 @@ class StaffRepository:
         conn.close()
         return staff
 
+    def get_by_name(self, staff_name: str):
+        """Get staff by full name (for WhatsApp lookup)."""
+        conn = get_db_connection()
+        staff = conn.execute(
+            "SELECT * FROM staff WHERE staff_name = ? AND active = 1",
+            (staff_name,),
+        ).fetchone()
+        conn.close()
+        return staff
+
+    def get_by_short_name(self, staff_short_name: str):
+        """Get staff by short name."""
+        conn = get_db_connection()
+        staff = conn.execute(
+            "SELECT * FROM staff WHERE staff_short_name = ? AND active = 1",
+            (staff_short_name,),
+        ).fetchone()
+        conn.close()
+        return staff
+
     def get_by_room(self, room_id: int):
         conn = get_db_connection()
         staff = conn.execute("SELECT * FROM staff WHERE room_id = ? AND active = 1 ORDER BY staff_name", (room_id,)).fetchall()
         conn.close()
         return staff
 
-    def update(self, staff_id: int, staff_name: str = None, staff_short_name: str = None, room_id: int = None, role_id: int | None = None, active: int = None):
+    def get_staff_with_phones_by_room(self, room_id: int):
+        """Get all active staff in a room who have phone numbers (for broadcast)."""
+        conn = get_db_connection()
+        staff = conn.execute(
+            """
+            SELECT id, staff_name, staff_short_name, room_id, phone_number
+            FROM staff
+            WHERE room_id = ?
+              AND active = 1
+              AND phone_number IS NOT NULL
+              AND phone_number != ''
+            ORDER BY staff_name
+            """,
+            (room_id,),
+        ).fetchall()
+        conn.close()
+        return staff
+
+    def update(self, staff_id: int, staff_name: str = None, staff_short_name: str = None, room_id: int = None, role_id: int | None = None, active: int = None, phone_number: str = None):
         conn = get_db_connection()
         updates = []
         params = []
@@ -54,6 +92,9 @@ class StaffRepository:
         if active is not None:
             updates.append("active = ?")
             params.append(active)
+        if phone_number is not None:
+            updates.append("phone_number = ?")
+            params.append(phone_number)
 
         if updates:
             params.append(staff_id)
