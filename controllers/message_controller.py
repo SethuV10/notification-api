@@ -18,7 +18,8 @@ class MessageCreate(BaseModel):
     message_text: str
     priority: str = "normal"
     category: str = "Call"
-
+    acknowledged: bool = False
+    requires_ack: bool = False
 
 class AcknowledgeRequest(BaseModel):
     message_id: int
@@ -26,8 +27,16 @@ class AcknowledgeRequest(BaseModel):
 
 @router.post("/messages")
 def create_message(message: MessageCreate, current_user: str = Depends(get_current_user)):
-    return dict(message_service.create_message(message.model_dump()))
+    payload = message.model_dump()
 
+    print("ACKNOWLEDGED:", message.acknowledged)
+    print("REQUIRES_ACK:", message.requires_ack)
+    print("FULL PAYLOAD:", payload)
+
+    payload["acknowledged"] = int(message.acknowledged)
+    payload["requires_ack"] = int(message.requires_ack)
+
+    return dict(message_service.create_message(payload))
 
 @router.get("/messages/history")
 def get_message_history(current_user: str = Depends(get_current_user)):
