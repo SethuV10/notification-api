@@ -54,3 +54,43 @@ def get_active_messages_by_team(team_id: int):
 @router.get("/messages/active/staff/{staff_id}")
 def get_active_messages_by_staff(staff_id: int):
     return [dict(msg) for msg in message_service.list_active_messages_by_staff(staff_id)]
+
+class RequiresAckRequest(BaseModel):
+    requires_ack: bool
+
+
+@router.patch("/messages/{message_id}/requires-ack")
+def update_message_requires_ack(
+    message_id: int,
+    request: RequiresAckRequest,
+    current_user: str = Depends(get_current_user),
+):
+    updated = message_service.set_requires_ack(
+        message_id,
+        request.requires_ack,
+    )
+
+    if not updated:
+        raise HTTPException(
+            status_code=404,
+            detail="Message not found.",
+        )
+
+    return {
+        "message_id": message_id,
+        "requires_ack": request.requires_ack,
+    }
+@router.post("/messages/{message_id}/acknowledge")
+def acknowledge_message(message_id: int):
+    updated = message_service.acknowledge_message(message_id)
+
+    if not updated:
+        raise HTTPException(
+            status_code=404,
+            detail="Message not found.",
+        )
+
+    return {
+        "message_id": message_id,
+        "acknowledged": True,
+    }

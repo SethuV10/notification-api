@@ -13,9 +13,9 @@ class MessageRepository:
                 (
                     room_id, category, staff_name, staff_id, team_id,
                     caller_name, caller_number, message_text, priority,
-                    expires_at, acknowledged
+                    expires_at, requires_ack, acknowledged
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     payload["room_id"],
@@ -28,7 +28,8 @@ class MessageRepository:
                     payload["message_text"],
                     payload["priority"],
                     payload["expires_at"],
-                    1 if payload.get("acknowledged", False) else 0,
+                    int(payload.get("requires_ack", False)),
+                    int(payload.get("acknowledged", False))
                 ),
             )
 
@@ -137,6 +138,7 @@ class MessageRepository:
         finally:
             conn.close()
 
+    
     def set_requires_ack(self, message_id: int, requires_ack: bool):
         conn = get_db_connection()
         try:
@@ -146,13 +148,16 @@ class MessageRepository:
                 SET requires_ack = ?
                 WHERE id = ?
                 """,
-                (1 if requires_ack else 0, message_id),
+                (int(requires_ack), message_id),
             )
+
             conn.commit()
             return cursor.rowcount > 0
+
         except Exception:
             conn.rollback()
             raise
+
         finally:
             conn.close()
 
