@@ -12,20 +12,22 @@ from controllers.staff_controller import router as staff_router
 from controllers.category_controller import router as category_router
 from controllers.role_controller import router as role_router
 
-app = FastAPI(title="Office Call Notification System")
 
-# Configure CORS
-
-app.add_middleware(
-CORSMiddleware,
-allow_origins=["*"],
-allow_credentials=True,
-allow_methods=["*"],
-allow_headers=["*"],
+app = FastAPI(
+    title="Office Call Notification System",
+    version="0.1.0",
 )
 
-# Register API routers
+# Configure CORS for local frontend development.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# Register all application routers.
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(room_router)
@@ -35,16 +37,16 @@ app.include_router(staff_router)
 app.include_router(category_router)
 app.include_router(role_router)
 
-# Initialize database
 
+# Initialize the database.
 init_db()
+
 
 @app.get("/")
 def root():
     return {"message": "Hello"}
 
+
 @app.get("/ping")
 def ping():
-    return {
-        "status": "ok"
-    }
+    return {"status": "ok"}
